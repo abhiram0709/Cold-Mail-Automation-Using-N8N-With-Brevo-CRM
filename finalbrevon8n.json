@@ -1,0 +1,178 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "id": "40fe3f68-a6a6-4cbf-9c2b-ed90ff5f3b18",
+      "name": "Split Emails1",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 1,
+      "position": [
+        760,
+        40
+      ]
+    },
+    {
+      "parameters": {
+        "unit": "minutes"
+      },
+      "id": "34afb720-3e87-4361-87df-071a22f3ae36",
+      "name": "Wait 3 seconds1",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [
+        1300,
+        40
+      ],
+      "webhookId": "62345659-2bab-4745-a20e-134cc2e7a8b0"
+    },
+    {
+      "parameters": {
+        "functionCode": "const input = $json.body?.data;\n\nif (!Array.isArray(input)) {\n  throw new Error(\"Invalid input data. Expected 'data' to be an array.\");\n}\n\nreturn input.map(company => ({\n  json: {\n    name: company.name,\n    linkedinUrl: company.linkedinUrl,\n    email: company.email,\n  }\n}));\n\n"
+      },
+      "id": "477b69ea-95f0-4d67-86b0-441f30e9b7d5",
+      "name": "Extract Company Data1",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        300,
+        40
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "append",
+        "sheetId": "1qCv-Tgwo-wLCcirSTfilSJGVsUvGX9mFTiRTbnuj5YU",
+        "range": "sales!A:C",
+        "options": {}
+      },
+      "id": "e9970ba1-a72b-4293-baee-8c073d5058c4",
+      "name": "Update Google Sheet1",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 1,
+      "position": [
+        520,
+        40
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "pVLphCM3OE9vX5lt",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "linkedin-data",
+        "options": {}
+      },
+      "id": "ccbf3c4c-f1fd-4524-a8ac-792dbb1f231b",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        80,
+        40
+      ],
+      "webhookId": "c2869a94-e263-4b4d-a06e-14d62145e058"
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "https://api.brevo.com/v3/smtp/email",
+        "jsonParameters": true,
+        "options": {
+          "bodyContentType": "json"
+        },
+        "bodyParametersJson": "={\n  \"sender\": {\n    \"name\": \"Abhiram Yadav\",\n    \"email\": \"abhiram@aerobyte.in\"\n  },\n  \"to\": [\n    {\n      \"email\": \"{{$json.email}}\",\n      \"name\": \"{{$json.name}}\"\n    }\n  ],\n  \"subject\": \"Exciting Partnership Opportunity from AeroByte 🚀\",\n  \"htmlContent\": \"<p>Dear {{$json.name}},</p><p>I hope this message finds you well.</p><p>I am reaching out on behalf of <strong>AeroByte Innovations</strong>, a Hyderabad-based company specializing in AI-driven software solutions, including chatbots, AI web apps, and digital growth services.</p><p>We are impressed by the work your company is doing and would love to explore a strategic partnership that could bring value to both our organizations.</p><p>If you're open to a quick call or meeting, please let us know a convenient time.</p><br><p>Thank You.<br>Regards,</p><p><strong>Abhiram Yadav</strong><br>Business Analyst</p><p><img src=\\\"https://drive.google.com/uc?export=view&id=1cfMbCCD1clm7e6OwtXcDDyuG52myPpjB\\\" alt=\\\"AeroByte Innovations Logo\\\" width=\\\"150\\\" /></p><p><strong>Corporate Office:</strong><br>8th Floor, Vaishnavi's Cynosure, 2-48/5/6, Gachibowli Rd,<br>Opp. RTTC, Telecom Nagar Extension, Gachibowli,<br>Hyderabad, Telangana 500032</p><p><strong>Website:</strong> <a href=\\\"https://www.aerobyte.in/\\\" target=\\\"_blank\\\">www.aerobyte.in</a><br><strong>Phone:</strong> +91 6303450600<br><strong>Email:</strong> <a href=\\\"mailto:abhiram@aerobyte.in\\\">abhiram@aerobyte.in</a><br><strong>Location:</strong> <a href=\\\"https://maps.app.goo.gl/8x73CLy3mfHc16TL6\\\" target=\\\"_blank\\\">Google Maps</a></p><p>If you no longer wish to receive these emails, please click below:</p><p><a href=\\\"https://docs.google.com/forms/d/1T3OqpfveG1V4MUShmH0cPgShdc9kOxeNHbeFxKCCp9g/viewform\\\" style=\\\"padding: 10px 20px; background-color: #f44336; color: white; text-decoration: none; border-radius: 5px; font-size: 14px;\\\">Unsubscribe</a></p>\"\n}\n",
+        "headerParametersJson": "={\n  \"api-key\": \"****MASKED_FOR_SECURITY****\"\n}"
+      },
+      "id": "7f9163f1-4d23-4059-a9e1-ac9ab9038025",
+      "name": "Send via Brevo1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        1060,
+        40
+      ],
+      "retryOnFail": false
+    }
+  ],
+  "connections": {
+    "Split Emails1": {
+      "main": [
+        [
+          {
+            "node": "Send via Brevo1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 3 seconds1": {
+      "main": [
+        [
+          {
+            "node": "Split Emails1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Company Data1": {
+      "main": [
+        [
+          {
+            "node": "Update Google Sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Google Sheet1": {
+      "main": [
+        [
+          {
+            "node": "Split Emails1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Extract Company Data1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send via Brevo1": {
+      "main": [
+        [
+          {
+            "node": "Wait 3 seconds1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4d1b747b268f15c9cb248839df7c3d2c37b5504f1fe395e9b0b48bdf1395d383"
+  }
+}

@@ -8,4 +8,3 @@ ENV N8N_EDITOR_BASE_URL=https://cold-mail-automation-using-n8n-with.onrender.com
 
 EXPOSE 5678
 
-CMD ["n8n"]
